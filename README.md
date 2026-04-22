@@ -1,0 +1,1 @@
+# ngx-deep-signal
