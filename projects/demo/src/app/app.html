@@ -1,0 +1,103 @@
+<main class="wrap">
+  <h1 data-testid="heading">ngx-deep-signal demo</h1>
+  <p class="lead">
+    单页覆盖：<code>deepSignal</code> 深层路径、叶子 <code>set</code>/<code>update</code>、根
+    <code>set</code>/<code>update</code>、数组/<code>Date</code> 叶子、<code>computed</code> /
+    <code>untracked</code>、<code>asReadonly</code>、<code>linkedSignal</code>、<code>effect</code>、
+    <code>isSignal</code>、<code>resource</code> / <code>rxResource</code>、<code>toSignal</code>、
+    <code>input</code> / <code>output</code> / <code>model</code>。
+  </p>
+
+  <section class="panel" data-testid="section-io" aria-label="input output model">
+    <h2><code>input</code> / <code>output</code> / <code>model</code></h2>
+    <app-io-demo
+      [displayName]="state.user.name()"
+      (rename)="state.user.name.set($event)"
+      [(guest)]="guestDraft"
+    />
+    <p class="hint">父级 <code>guestDraft</code>：<span data-testid="parent-guest-draft">{{ guestDraft() }}</span></p>
+  </section>
+
+  <section class="panel" data-testid="section-basic" aria-label="basic user">
+    <h2>用户（叶子 + 根）</h2>
+    <p data-testid="label">{{ label() }}</p>
+    <dl class="grid">
+      <dt>Name</dt>
+      <dd data-testid="name">{{ state.user.name() }}</dd>
+      <dt>Age</dt>
+      <dd data-testid="age">{{ state.user.age() }}</dd>
+    </dl>
+    <pre class="json" data-testid="snapshot">{{ state() | json }}</pre>
+    <div class="actions">
+      <button type="button" data-testid="btn-name" (click)="setNameBob()">Set name to Bob</button>
+      <button type="button" data-testid="btn-age" (click)="incAge()">Increment age</button>
+      <button type="button" data-testid="btn-root-update" (click)="rootUpdateKeepNameResetAge()">
+        Root update (keep name, age→36)
+      </button>
+      <button type="button" data-testid="btn-reset" (click)="reset()">Reset whole tree</button>
+    </div>
+  </section>
+
+  <section class="panel" data-testid="section-branch" aria-label="branch snapshot">
+    <h2>分支快照 <code>state.user()</code></h2>
+    <pre class="json" data-testid="branch-user">{{ state.user() | json }}</pre>
+  </section>
+
+  <section class="panel" data-testid="section-settings" aria-label="nested settings">
+    <h2>深层路径 <code>settings.theme</code></h2>
+    <p data-testid="theme">{{ state.settings.theme() }}</p>
+    <button type="button" data-testid="btn-theme" (click)="flipTheme()">Toggle theme</button>
+  </section>
+
+  <section class="panel" data-testid="section-leaves" aria-label="array and date">
+    <h2>数组 / Date 叶子</h2>
+    <p data-testid="tags">{{ state.tags().join(',') }}</p>
+    <button type="button" data-testid="btn-tag" (click)="appendTag()">Append tag</button>
+    <p data-testid="joined">{{ state.joined().toISOString() }}</p>
+    <button type="button" data-testid="btn-joined" (click)="bumpJoinedYear()">Joined +1 year</button>
+  </section>
+
+  <section class="panel" data-testid="section-computed" aria-label="computed and untracked">
+    <h2><code>computed</code> 粒度与 <code>untracked</code></h2>
+    <p data-testid="name-only">{{ nameOnly() }}</p>
+    <p data-testid="untracked-line">{{ untrackedLine() }}</p>
+    <p class="hint">改 age 后：<code>name-only</code> 不变；<code>untracked-line</code> 在改 name 前仍显示旧 age。</p>
+  </section>
+
+  <section class="panel" data-testid="section-tosignal" aria-label="toSignal">
+    <h2><code>toSignal</code> + 深层读</h2>
+    <p data-testid="mixed-tick">{{ mixedTick() }}</p>
+    <button type="button" data-testid="btn-tick" (click)="incTick()">Increment tick</button>
+  </section>
+
+  <section class="panel" data-testid="section-linked" aria-label="linkedSignal">
+    <h2><code>linkedSignal</code></h2>
+    <p data-testid="name-upper">{{ nameUpper() }}</p>
+  </section>
+
+  <section class="panel" data-testid="section-readonly" aria-label="asReadonly">
+    <h2><code>asReadonly</code></h2>
+    <p data-testid="readonly-name">{{ readonlyName() }}</p>
+    <pre class="json" data-testid="root-readonly">{{ rootReadonly() | json }}</pre>
+  </section>
+
+  <section class="panel" data-testid="section-effect" aria-label="effect">
+    <h2><code>effect</code>（只订阅 <code>name</code>）</h2>
+    <p data-testid="name-effect-runs">{{ nameEffectRuns() }}</p>
+  </section>
+
+  <section class="panel" data-testid="section-is-signal" aria-label="isSignal">
+    <h2><code>isSignal</code> 品牌</h2>
+    <pre class="json" data-testid="signal-branding">{{ signalBranding() }}</pre>
+  </section>
+
+  <section class="panel" data-testid="section-resource" aria-label="resource">
+    <h2><code>resource</code>（实验性）</h2>
+    <p data-testid="res-loader">{{ nameResource.value() }}</p>
+  </section>
+
+  <section class="panel" data-testid="section-rxresource" aria-label="rxResource">
+    <h2><code>rxResource</code></h2>
+    <p data-testid="rx-value">{{ nameRx.value() }}</p>
+  </section>
+</main>
