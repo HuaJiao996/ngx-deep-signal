@@ -27,9 +27,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-      
-      - name: whoami
-        run: npm whoami
 
       - name: Build library package
         run: npm run build:package
@@ -37,4 +34,4 @@ jobs:
       - name: Publish dist/ngx-deep-signal
         run: |
           cd dist/ngx-deep-signal
-          npm publish --access public
+          npm publish
