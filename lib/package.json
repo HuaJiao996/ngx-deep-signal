@@ -1,6 +1,6 @@
 {
   "name": "ngx-deep-signal",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Deep/nested writable Angular signals with per-path dependency tracking (Proxy + field-level computed).",
   "keywords": [
     "angular",
@@ -16,8 +16,8 @@
     "url": "git+https://github.com/HuaJiao996/ngx-deep-signal.git"
   },
   "peerDependencies": {
-    "@angular/common": "^21.0.0",
-    "@angular/core": "^21.0.0"
+    "@angular/common": ">=16.0.0",
+    "@angular/core": ">=16.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
