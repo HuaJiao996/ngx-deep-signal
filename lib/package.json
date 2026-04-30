@@ -1,6 +1,6 @@
 {
   "name": "ngx-deep-signal",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Deep/nested writable Angular signals with per-path dependency tracking (Proxy + field-level computed).",
   "keywords": [
     "angular",
