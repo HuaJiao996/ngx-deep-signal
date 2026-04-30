@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HuaJiao996/ngx-deep-signal"
+    "url": "git+https://github.com/HuaJiao996/ngx-deep-signal.git"
   },
   "peerDependencies": {
     "@angular/common": "^21.0.0",
