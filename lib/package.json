@@ -1,0 +1,26 @@
+{
+  "name": "ngx-deep-signal",
+  "version": "0.0.1",
+  "description": "Deep/nested writable Angular signals with per-path dependency tracking (Proxy + field-level computed).",
+  "keywords": [
+    "angular",
+    "signal",
+    "signals",
+    "deep-signal",
+    "reactive",
+    "state"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HuaJiao996/ngx-deep-signal"
+  },
+  "peerDependencies": {
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
