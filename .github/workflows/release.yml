@@ -9,6 +9,7 @@ on:
 jobs:
   release:
     name: Build and publish
+    environment: NPM
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,6 +23,7 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+          registry-auth-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
@@ -29,10 +31,5 @@ jobs:
       - name: Build library package
         run: npm run build:package
 
-      - name: Authenticate to npm
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
       - name: Publish dist/ngx-deep-signal
         run: npm --prefix dist/ngx-deep-signal publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
