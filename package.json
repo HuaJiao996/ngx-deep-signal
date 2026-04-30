@@ -28,7 +28,6 @@
       }
     ]
   },
-  "private": true,
   "license": "MIT",
   "packageManager": "npm@11.12.1",
   "dependencies": {
