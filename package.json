@@ -1,12 +1,15 @@
 {
   "name": "ngx-deep-signal",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "prestart": "ng build ngx-deep-signal",
     "start": "ng serve demo",
     "build": "ng build ngx-deep-signal",
     "build:demo": "ng build ngx-deep-signal && ng build demo",
+    "build:package": "ng build ngx-deep-signal",
+    "publish:package": "cd dist/ngx-deep-signal && npm publish --access public",
+    "release": "npm run build:package && npm run publish:package",
     "watch": "ng build --watch --configuration development",
     "test": "ng test ngx-deep-signal",
     "test:coverage": "ng test ngx-deep-signal --configuration=coverage",
@@ -26,6 +29,7 @@
     ]
   },
   "private": true,
+  "license": "MIT",
   "packageManager": "npm@11.12.1",
   "dependencies": {
     "@angular/common": "^21.0.0",
