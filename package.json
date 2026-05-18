@@ -14,19 +14,11 @@
     "test": "ng test ngx-deep-signal",
     "test:coverage": "ng test ngx-deep-signal --configuration=coverage",
     "e2e": "ng build ngx-deep-signal && ng e2e demo",
-    "e2e:ui": "ng build ngx-deep-signal && ng e2e demo -- --ui"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
+    "e2e:ui": "ng build ngx-deep-signal && ng e2e demo -- --ui",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "license": "MIT",
   "packageManager": "npm@11.12.1",
@@ -49,6 +41,8 @@
     "@vitest/coverage-v8": "^4.1.5",
     "jsdom": "^28.0.0",
     "ng-packagr": "^21.2.0",
+    "oxfmt": "^0.50.0",
+    "oxlint": "^1.65.0",
     "playwright-ng-schematics": "^21.0.10",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"

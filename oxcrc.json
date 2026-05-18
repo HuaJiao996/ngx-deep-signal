@@ -1,0 +1,15 @@
+{
+  "$schema": "https://oxc.rs/schema.json",
+  "categories": {
+    "correctness": true,
+    "suspicious": true,
+    "pedantic": true,
+    "style": true
+  },
+  "ignore": [
+    "dist/",
+    "node_modules/",
+    "coverage/",
+    "CHANGELOG.md"
+  ]
+}
