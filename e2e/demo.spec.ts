@@ -238,3 +238,63 @@ test.describe('input / output / model', () => {
     await expect(page.getByTestId('parent-guest-draft')).toHaveText('guest');
   });
 });
+
+test.describe('peek and updateAtPath', () => {
+  test('peek increments counter without tracking', async ({ page }) => {
+    await page.goto('/');
+    const counter = page.getByTestId('peek-count');
+    await expect(counter).toHaveText('0');
+
+    await page.getByTestId('btn-peek').click();
+    await expect(counter).toHaveText('1');
+
+    await page.getByTestId('btn-peek').click();
+    await expect(counter).toHaveText('2');
+
+    // Peek does NOT track — changing name should not affect peek count
+    await page.getByTestId('btn-name').click();
+    await expect(counter).toHaveText('2');
+  });
+
+  test('updateAtPath updates leaf by path', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByTestId('name')).toHaveText('Ada');
+
+    await page.getByTestId('btn-update-path').click();
+    await expect(page.getByTestId('name')).toHaveText('ADA');
+    await expect(page.getByTestId('label')).toHaveText('ADA · 36');
+  });
+
+  test('updateAtPath updates branch by path', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('btn-update-branch').click();
+    await expect(page.getByTestId('name')).toHaveText('User-Ada');
+  });
+
+  test('peek counter resets', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('btn-peek').click();
+    await page.getByTestId('btn-peek').click();
+    await expect(page.getByTestId('peek-count')).toHaveText('2');
+
+    await page.getByTestId('btn-peek-reset').click();
+    await expect(page.getByTestId('peek-count')).toHaveText('0');
+  });
+
+  test('batch coalesces two writes into one update', async ({ page }) => {
+    await page.goto('/');
+    const name = page.getByTestId('name');
+    const age = page.getByTestId('age');
+
+    const initialName = await name.textContent();
+    const initialAge = await age.textContent();
+
+    await page.getByTestId('btn-batch').click();
+
+    // Both writes applied, name now starts with 'Batch-'
+    const newName = await name.textContent();
+    expect(newName?.startsWith('Batch-')).toBe(true);
+    // Age increased by 10
+    expect(Number(await age.textContent())).toBe(Number(initialAge) + 10);
+  });
+});

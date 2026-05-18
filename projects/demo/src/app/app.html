@@ -5,8 +5,27 @@
     <code>set</code>/<code>update</code>、数组/<code>Date</code> 叶子、<code>computed</code> /
     <code>untracked</code>、<code>asReadonly</code>、<code>linkedSignal</code>、<code>effect</code>、
     <code>isSignal</code>、<code>resource</code> / <code>rxResource</code>、<code>toSignal</code>、
-    <code>input</code> / <code>output</code> / <code>model</code>。
+    <code>input</code> / <code>output</code> / <code>model</code>、<code>peek</code>、<code>updateAtPath</code>。
   </p>
+
+  <!-- ── New: peek + updateAtPath demo ─────────────────────────────────── -->
+  <section class="panel" data-testid="section-new-api" aria-label="new APIs">
+    <h2>新 API：<code>peek</code> 和 <code>updateAtPath</code></h2>
+    <p class="hint">
+      <code>peek</code> 读取值而不创建依赖；<code>updateAtPath</code> 按路径批量更新。
+    </p>
+    <p>
+      peek 调用计数：<strong data-testid="peek-count">{{ peekReadCount() }}</strong>
+    </p>
+    <div class="actions">
+      <button type="button" data-testid="btn-peek" (click)="demonstratePeek()">peek(name)</button>
+      <button type="button" data-testid="btn-update-path" (click)="updateViaPath()">updateAtPath(name→大写)</button>
+      <button type="button" data-testid="btn-update-branch" (click)="updateBranchViaPath()">updateAtPath(user分支)</button>
+      <button type="button" data-testid="btn-update-array" (click)="updateArrayViaPath()">updateAtPath(tags[0]</button>
+      <button type="button" data-testid="btn-peek-reset" (click)="resetPeekCounter()">重置计数</button>
+      <button type="button" data-testid="btn-batch" (click)="batchUpdate()">batch(2次写入)</button>
+    </div>
+  </section>
 
   <section class="panel" data-testid="section-io" aria-label="input output model">
     <h2><code>input</code> / <code>output</code> / <code>model</code></h2>

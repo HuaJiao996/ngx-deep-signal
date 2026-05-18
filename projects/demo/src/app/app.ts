@@ -1,4 +1,3 @@
-import { JsonPipe } from '@angular/common';
 import {
   Component,
   computed,
@@ -13,12 +12,12 @@ import {
 } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, of } from 'rxjs';
-import { deepSignal } from 'ngx-deep-signal';
+import { deepSignal, peek, toReadonlyDeepSignal, updateAtPath, batch } from 'ngx-deep-signal';
 import { IoDemoComponent } from './io-demo';
 
 @Component({
   selector: 'app-root',
-  imports: [JsonPipe, IoDemoComponent],
+  imports: [IoDemoComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -35,6 +34,9 @@ export class App {
     tags: ['alpha'] as string[],
     joined: new Date('2020-01-01T00:00:00.000Z'),
   });
+
+  /** 只读版本（通过 toReadonlyDeepSignal）。 */
+  readonly stateReadonly = toReadonlyDeepSignal(this.state);
 
   /** 同时依赖 name + age 的 `computed`。 */
   readonly label = computed(() => `${this.state.user.name()} · ${this.state.user.age()}`);
@@ -56,6 +58,9 @@ export class App {
 
   readonly readonlyName = this.state.user.name.asReadonly();
   readonly rootReadonly = this.state.asReadonly();
+
+  /** Whether batch is currently active (for UI toggle). */
+  readonly batchActive = signal(false);
 
   readonly nameUpper = linkedSignal({
     source: () => this.state.user.name(),
@@ -83,6 +88,9 @@ export class App {
       leaf: isSignal(this.state.user.name),
     }),
   );
+
+  /** peek 示例：不创建依赖的读取次数 */
+  readonly peekReadCount = signal(0);
 
   readonly nameEffectRuns = signal(0);
 
@@ -133,5 +141,45 @@ export class App {
 
   incTick(): void {
     this.tick$.next(this.tick() + 1);
+  }
+
+  // ── New API demos ──────────────────────────────────────────────────────────
+
+  /** peek 操作演示。 */
+  demonstratePeek(): void {
+    // peek 不创建依赖追踪，所以这个 computed 不会因为 name 变化而重算
+    const peekedName = peek(this.state.user.name);
+    const peekedSnapshot = peek(() => this.state.user());
+    this.peekReadCount.set(this.peekReadCount() + 1);
+    // eslint-disable-next-line no-console
+    console.log('[peek] name:', peekedName, '| branch:', peekedSnapshot);
+  }
+
+  /** updateAtPath 操作演示。 */
+  updateViaPath(): void {
+    updateAtPath(this.state, ['user', 'name'], (n) => n.toUpperCase());
+  }
+
+  /** updateAtPath 操作演示（分支级）。 */
+  updateBranchViaPath(): void {
+    updateAtPath(this.state, ['user'], (u) => ({ ...u, name: `User-${u.name}` }));
+  }
+
+  /** updateAtPath 操作演示（数组索引）。 */
+  updateArrayViaPath(): void {
+    updateAtPath(this.state, ['tags', '0'], () => 'beta');
+  }
+
+  /** reset peek counter. */
+  resetPeekCounter(): void {
+    this.peekReadCount.set(0);
+  }
+
+  /** batch demo: toggle batch mode then fire multiple writes. */
+  batchUpdate(): void {
+    batch(() => {
+      this.state.user.name.set('Batch-' + Date.now());
+      this.state.user.age.update((n) => n + 10);
+    });
   }
 }

@@ -1,16 +1,30 @@
-## ngx-deep-signal
+# ngx-deep-signal
 
-**中文** [`README_zh.md`](README_zh.md)
+**[中文说明](README_zh.md)** | **Deep / nested writable signals** for Angular.
 
-**Deep / nested writable signals** for Angular: reading `state.user.name()` only subscribes to that path, so updates to sibling fields (e.g. `state.user.age`) do not invalidate consumers that only read `name`. Leaf fields expose `WritableSignal`-style `set` / `update`; replacing whole branches still uses the root `set` / `update`.
+Reading `state.user.name()` only subscribes to that specific path — updates to sibling
+fields (e.g. `state.user.age`) do **not** invalidate consumers that only read `name`.
+Leaf fields expose `WritableSignal`-style `set` / `update`; replacing whole branches
+uses the root `set` / `update`.
 
-Public API: `deepSignal`, type `WritableDeepSignal` (see `lib/public-api.ts`).
+## Public API
+
+| Export | Description |
+|--------|-------------|
+| `deepSignal(initialValue)` | Creates a deep writable signal tree |
+| `peek(signalRef)` | Reads without creating a reactive dependency |
+| `updateAtPath(ds, path, updater)` | Mutates a path via an updater function |
+| `toReadonlyDeepSignal(ds)` | Converts a writable deep signal to fully read-only |
+| `batch(fn)` | Batches multiple leaf writes into a single root update |
+| `WritableDeepSignal<T>` | Type for writable deep signal trees |
+| `ReadonlyDeepSignal<T>` | Type for read-only deep signal trees |
+| `DeepValue<T, P>` | Utility type: value at path `P` from type `T` |
 
 ## Requirements
 
 - Node.js and npm (see `packageManager` in root `package.json`)
 - [Angular CLI](https://angular.dev/tools/cli) 21.x (dev dependency)
-- For E2E: install Playwright browsers once (Chromium is enough for the default config):
+- For E2E: install Playwright browsers once:
 
 ```bash
 npx playwright install chromium
@@ -28,59 +42,96 @@ npm install ngx-deep-signal
 
 ```ts
 import { computed, effect, linkedSignal, untracked } from '@angular/core';
-import { deepSignal } from 'ngx-deep-signal';
+import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from 'ngx-deep-signal';
 
 const state = deepSignal({ user: { name: 'Ada', age: 36, tags: ['dev'] as string[] } });
+```
 
-// Writable leaves
+### Writable leaf operations
+
+```ts
 state.user.name.set('Bob');
-state.user.age.update((n) => n + 1);
-state.user.tags.update((tags) => [...tags, 'signal']);
+state.user.age.update(n => n + 1);
+state.user.tags.update(tags => [...tags, 'signal']);
+```
 
-// Whole tree
+### Whole-tree operations
+
+```ts
 state.set({ user: { name: 'Ada', age: 36, tags: ['dev'] } });
-state.update((d) => ({ user: { ...d.user, age: 18 } }));
-// In `update`, `d` is a plain snapshot of `T`, not a deep signal — use `d.user.name`, not `d.user.name()`.
+state.update(d => ({ user: { ...d.user, age: 18 } }));
+// In `update`, `d` is a plain snapshot of T, NOT a deep signal — use `d.user.name`, not `d.user.name()`.
+```
 
-// Snapshots at any level (Signal call)
-const root = state();           // { user: { name, age, tags } }
-const user = state.user();      // { name, age, tags }
-const name = state.user.name(); // string
+### Snapshots at any level
 
-// Angular Signal usage with deepSignal
+```ts
+const root = state();            // { user: { name, age, tags } }
+const user = state.user();       // { name, age, tags }
+const name = state.user.name();  // string
+```
+
+### Non-reactive read with `peek`
+
+```ts
+const name = peek(state.user.name);        // 'Ada' — no dependency tracked
+const snapshot = peek(() => state.user()); // { name: 'Ada', ... } — also works with a getter
+```
+
+### Path-based updates with `updateAtPath`
+
+```ts
+// Update a leaf at an arbitrary path
+updateAtPath(state, ['user', 'name'], n => n.toUpperCase()); // state.user.name() === 'ADA'
+
+// Update a branch at an intermediate path
+updateAtPath(state, ['user'], u => ({ ...u, age: 40 }));
+
+// Full root update with empty path
+updateAtPath(state, [], () => ({ user: { name: 'Lin', age: 18 } }));
+
+// Update array items by index
+updateAtPath(state, ['items', '0', 'label'], l => l.toUpperCase());
+```
+
+### Readonly conversion
+
+```ts
+const readonly = toReadonlyDeepSignal(state);
+console.log(readonly.user.name()); // 'Ada'
+// readonly.user.name.set('Bob'); // compile error — not available
+
+// also available as `.asReadonly()` on any path
+const readonlyName = state.user.name.asReadonly();
+const rootReadonly = state.asReadonly();
+
+// batch: coalesce multiple leaf writes into a single root update
+batch(() => {
+  state.user.name.set('Bob');
+  state.user.age.set(40);
+  state.user.name.set('Lin'); // last write wins
+});
+// Only one root update fires — computed/effect sees final snapshot
+```
+
+### Angular Signal APIs
+
+```ts
 const nameView = computed(() => state.user.name());
-const ageUntracked = computed(() => `${state.user.name()}-${untracked(() => state.user.age())}`);
+const ageUntracked = computed(() =>
+  `${state.user.name()}-${untracked(() => state.user.age())}`,
+);
 
 effect(() => {
   console.log('Name changed:', state.user.name());
 });
 
-const readonlyName = state.user.name.asReadonly();
-const rootView = state.asReadonly();
-
-// In app code, create `linkedSignal` inside an injection context (e.g. constructor / `inject` field initializer).
+// linkedSignal inside injection context
 const alias = linkedSignal({
   source: () => state.user.name(),
   computation: (name) => name.toUpperCase(),
 });
 ```
-
-Nested **records** are split by key; arrays, `Date`, `Map`, etc. are treated as **leaf** values (same idea as NgRx deep signals).
-
-### Return type
-
-`deepSignal({ user: { name: 'Ada', age: 36 } })` is typed as:
-
-```ts
-WritableSignal<{
-  user: WritableSignal<{
-    name: WritableSignal<string>;
-    age: WritableSignal<number>;
-  }>;
-}>
-```
-
-i.e. the root and every known-record branch are themselves `WritableSignal` of the same shape, recursively. Leaves (`Date`, arrays, primitives) are `WritableSignal<leafType>`.
 
 ### RxJS interop and `resource` (experimental)
 
@@ -109,7 +160,37 @@ const rxRes = rxResource({
 });
 ```
 
-`resource` is **experimental** in Angular; `afterRenderEffect` is browser-oriented and is **not** covered here (unit tests run under jsdom/Node).
+`resource` is **experimental** in Angular.
+
+## Return type
+
+`deepSignal({ user: { name: 'Ada', age: 36 } })` is typed as:
+
+```ts
+WritableSignal<{
+  user: WritableSignal<{
+    name: WritableSignal<string>;
+    age: WritableSignal<number>;
+  }>;
+}>
+```
+
+`toReadonlyDeepSignal(state)` returns:
+
+```ts
+ReadonlyDeepSignal<{
+  user: ReadonlyDeepSignal<{
+    name: Signal<string>;     // no set/update
+    age: Signal<number>;      // no set/update
+  }>;
+}>
+```
+
+## Type system: what gets deep-split?
+
+- **Plain objects with known keys** → recursively split into sub-signals
+- **Records with index signatures** (`Record<string, unknown>`) → treated as a leaf (not expanded)
+- **Non-dictionary built-ins** → treated as leaves: `Array`, `Date`, `Map`, `Set`, `WeakMap`, `WeakSet`, `Promise`, `Error`, `RegExp`, `ArrayBuffer`, `DataView`, `Function`
 
 ## Angular Signal APIs covered by tests
 
@@ -120,14 +201,17 @@ const rxRes = rxResource({
 - `EffectRef#destroy` to stop an effect
 - `linkedSignal` with a deep leaf as `source`
 - `untracked`
-- `isSignal` on the root and branch proxies (linked leaves implement `WritableSignal` but may not pass `isSignal`)
-- `toSignal` / `toObservable` from `@angular/core/rxjs-interop` (deep path reads via `computed` bridge where needed)
+- `isSignal` on the root and branch proxies
+- `toSignal` / `toObservable` from `@angular/core/rxjs-interop`
 - `takeUntilDestroyed` tied to a host `DestroyRef` with `toObservable`
 - `firstValueFrom` on `toObservable` for a deep leaf
-- `resource` with a deep leaf as reactive `params` (async `loader`)
+- `resource` with a deep leaf as reactive `params`
 - `rxResource` with `stream` as `Observable` keyed by a deep leaf
-- signal read `()` at root / branch / leaf levels
-- `Date` treated as a writable leaf (`NonRecord`)
+- Signal read `()` at root / branch / leaf levels
+- `Date`, `Map`, `Set` treated as writable leaves
+- `peek` without creating dependencies
+- `updateAtPath` at leaf / branch / root levels
+- `toReadonlyDeepSignal` reactive tracking
 
 See `lib/deep-signal.spec.ts` for examples.
 
@@ -167,7 +251,7 @@ npm start
 
 Runs `ng build ngx-deep-signal` then `ng serve demo` (see `prestart` in `package.json`). Production bundle: `npm run build:demo` → `dist/demo/`.
 
-The demo includes `projects/demo/src/app/io-demo.ts`, a child component using **`input()`**, **`output()`**, and **`model()`** together with the parent’s `deepSignal` (`[displayName]="state.user.name()"`, `(rename)` → `state.user.name.set`, `[(guest)]` ↔ parent `guestDraft` signal).
+The demo includes `projects/demo/src/app/io-demo.ts`, a child component using **`input()`**, **`output()`**, and **`model()`** together with the parent's `deepSignal`.
 
 ## E2E tests (Playwright)
 

@@ -1,16 +1,27 @@
-## ngx-deep-signal（中文）
+# ngx-deep-signal（中文）
 
 英文说明见同目录 [`README.md`](README.md)。
 
 **深层 / 嵌套可写 Signal**：读 `state.user.name()` 时，依赖方只订阅该路径；改兄弟字段（如 `state.user.age`）不会让只读 `name` 的 `computed` / `effect` 重复执行。叶子字段提供与 `WritableSignal` 一致的 `set` / `update`；整枝替换仍通过根的 `set` / `update` 完成。
 
-对外导出：`deepSignal`、类型 `WritableDeepSignal`（见 `lib/public-api.ts`）。
+## 导出总览
+
+| 导出 | 说明 |
+|------|------|
+| `deepSignal(initialValue)` | 创建深层可写 Signal 树 |
+| `peek(signalRef)` | 无依赖追踪的读取 |
+| `updateAtPath(ds, path, updater)` | 按路径批量更新 |
+| `toReadonlyDeepSignal(ds)` | 将可写深层 Signal 转为只读 |
+| `batch(fn)` | 将多次叶子写入合并为单次根更新 |
+| `WritableDeepSignal<T>` | 可写深层 Signal 类型 |
+| `ReadonlyDeepSignal<T>` | 只读深层 Signal 类型 |
+| `DeepValue<T, P>` | 取类型 `T` 在路径 `P` 上的值类型 |
 
 ## 环境
 
 - Node.js 与 npm（版本见根目录 `package.json` 的 `packageManager`）
 - Angular CLI 21.x（作为开发依赖）
-- E2E：至少安装 Chromium（与默认 `playwright.config.ts` 一致）：
+- E2E：至少安装 Chromium：
 
 ```bash
 npx playwright install chromium
@@ -18,7 +29,7 @@ npx playwright install chromium
 
 ## 安装
 
-本地可先 `ng build`，再通过 `file:` 指向 `dist/ngx-deep-signal`；或发布到 npm 后直接安装：
+本地构建后通过 `file:` 指向 `dist/ngx-deep-signal`；或发布到 npm 后直接安装：
 
 ```bash
 npm install ngx-deep-signal
@@ -28,59 +39,96 @@ npm install ngx-deep-signal
 
 ```ts
 import { computed, effect, linkedSignal, untracked } from '@angular/core';
-import { deepSignal } from 'ngx-deep-signal';
+import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from 'ngx-deep-signal';
 
 const state = deepSignal({ user: { name: 'Ada', age: 36, tags: ['dev'] as string[] } });
+```
 
-// 叶子可写
+### 叶子可写操作
+
+```ts
 state.user.name.set('Bob');
-state.user.age.update((n) => n + 1);
-state.user.tags.update((tags) => [...tags, 'signal']);
+state.user.age.update(n => n + 1);
+state.user.tags.update(tags => [...tags, 'signal']);
+```
 
-// 整棵树替换
+### 整棵树操作
+
+```ts
 state.set({ user: { name: 'Ada', age: 36, tags: ['dev'] } });
-state.update((d) => ({ user: { ...d.user, age: 18 } }));
+state.update(d => ({ user: { ...d.user, age: 18 } }));
 // `update` 回调里的 `d` 是当前值的普通快照（类型 `T`），不是深层 signal，因此写 `d.user.name`，不要写 `d.user.name()`。
+```
 
-// 任意层级用 `()` 取快照
-const root = state();           // { user: { name, age, tags } }
-const user = state.user();      // { name, age, tags }
-const name = state.user.name(); // string
+### 任意层级用 `()` 取快照
 
-// 与 Angular Signal API 组合使用
+```ts
+const root = state();            // { user: { name, age, tags } }
+const user = state.user();       // { name, age, tags }
+const name = state.user.name();  // string
+```
+
+### 无依赖读取 `peek`
+
+```ts
+const name = peek(state.user.name);        // 'Ada' — 不创建依赖
+const snapshot = peek(() => state.user()); // { name: 'Ada', ... } — 也支持 getter
+```
+
+### 按路径更新 `updateAtPath`
+
+```ts
+// 更新叶子
+updateAtPath(state, ['user', 'name'], n => n.toUpperCase()); // 'ADA'
+
+// 更新分支
+updateAtPath(state, ['user'], u => ({ ...u, age: 40 }));
+
+// 根级全量更新（空路径）
+updateAtPath(state, [], () => ({ user: { name: 'Lin', age: 18 } }));
+
+// 按索引更新数组项
+updateAtPath(state, ['items', '0', 'label'], l => l.toUpperCase());
+```
+
+### 只读转换
+
+```ts
+const readonly = toReadonlyDeepSignal(state);
+console.log(readonly.user.name()); // 'Ada'
+// readonly.user.name.set('Bob'); // 编译错误 — set/update 不可用
+
+// 每个路径都支持 `.asReadonly()`
+const readonlyName = state.user.name.asReadonly();
+const rootReadonly = state.asReadonly();
+
+// batch：将多次叶子写入合并为单次根更新
+batch(() => {
+  state.user.name.set('Bob');
+  state.user.age.set(40);
+  state.user.name.set('Lin'); // 同一路径的最后写入生效
+});
+// 只触发一次根更新 — computed/effect 看到最终快照
+```
+
+### 与 Angular Signal API 组合
+
+```ts
 const nameView = computed(() => state.user.name());
-const ageUntracked = computed(() => `${state.user.name()}-${untracked(() => state.user.age())}`);
+const ageUntracked = computed(() =>
+  `${state.user.name()}-${untracked(() => state.user.age())}`,
+);
 
 effect(() => {
   console.log('name changed:', state.user.name());
 });
 
-const readonlyName = state.user.name.asReadonly();
-const rootView = state.asReadonly();
-
-// 在应用代码里，`linkedSignal` 需在注入上下文中创建（如构造函数、`inject` 字段初始化器）。
+// 在注入上下文中创建 linkedSignal
 const alias = linkedSignal({
   source: () => state.user.name(),
   computation: (name) => name.toUpperCase(),
 });
 ```
-
-对**普通对象**按 key 拆分；数组、`Date`、`Map` 等视为**叶子**整体（与 NgRx 侧 `DeepSignal` 的常见约定一致）。
-
-### 返回类型
-
-`deepSignal({ user: { name: 'Ada', age: 36 } })` 的类型为：
-
-```ts
-WritableSignal<{
-  user: WritableSignal<{
-    name: WritableSignal<string>;
-    age: WritableSignal<number>;
-  }>;
-}>
-```
-
-即根与每个「已知普通对象」分支都是同构的 `WritableSignal`，递归嵌套；叶子（`Date`、数组、原始类型等）是 `WritableSignal<叶子类型>`。
 
 ### RxJS 互操作与 `resource`（实验性）
 
@@ -109,7 +157,37 @@ const rxRes = rxResource({
 });
 ```
 
-`resource` 在 Angular 中仍为**实验性** API；`afterRenderEffect` 偏浏览器渲染周期，本库单测在 **jsdom/Node** 下**未覆盖**。
+`resource` 在 Angular 中仍为**实验性** API。
+
+## 返回类型
+
+`deepSignal({ user: { name: 'Ada', age: 36 } })` 的类型为：
+
+```ts
+WritableSignal<{
+  user: WritableSignal<{
+    name: WritableSignal<string>;
+    age: WritableSignal<number>;
+  }>;
+}>
+```
+
+`toReadonlyDeepSignal(state)` 返回：
+
+```ts
+ReadonlyDeepSignal<{
+  user: ReadonlyDeepSignal<{
+    name: Signal<string>;     // 无 set/update
+    age: Signal<number>;     // 无 set/update
+  }>;
+}>
+```
+
+## 类型系统：哪些会深度拆分？
+
+- **已知键的普通对象** → 递归拆分为子 Signal
+- **带索引签名的宽对象**（如 `Record<string, unknown>`）→ 视为叶子，不展开
+- **非字典内置对象** → 视为叶子：`Array`、`Date`、`Map`、`Set`、`WeakMap`、`WeakSet`、`Promise`、`Error`、`RegExp`、`ArrayBuffer`、`DataView`、`Function`
 
 ## 测试已覆盖的 Angular Signal 用法
 
@@ -120,14 +198,17 @@ const rxRes = rxResource({
 - `EffectRef#destroy` 停止后续调度
 - `linkedSignal`，以深层叶子为 `source`
 - `untracked`
-- `isSignal`：根与分支代理为 `true`；链式叶子具备 `WritableSignal` 接口但**未必**通过 `isSignal`（见单测说明）
-- `@angular/core/rxjs-interop` 的 `toSignal`、`toObservable`（必要时用 `computed` 包一层深层读）
+- `isSignal`：根与分支代理为 `true`
+- `@angular/core/rxjs-interop` 的 `toSignal`、`toObservable`
 - `takeUntilDestroyed` 与宿主 `DestroyRef` + `toObservable` 组合
 - `firstValueFrom` 读取 `toObservable` 的首个深层叶子值
 - `resource`：深层叶子作为响应式 `params` + 异步 `loader`
 - `rxResource`：`stream` 为 `Observable`，由深层叶子驱动 `params`
 - 根 / 分支 / 叶子三级 `()` 读取
-- `Date` 作为可写叶子（`NonRecord`）
+- `Date`、`Map`、`Set` 作为可写叶子
+- `peek` 无依赖读取
+- `updateAtPath` 叶子 / 分支 / 根各级更新
+- `toReadonlyDeepSignal` 响应式追踪
 
 对应示例见 `lib/deep-signal.spec.ts`。
 
