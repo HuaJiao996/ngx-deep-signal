@@ -520,11 +520,11 @@ export function updateAtPath<T, P extends readonly PropertyKey[]>(
  * type Name = DeepValue<{ user: { name: string } }, ['user', 'name']>; // string
  * ```
  */
-export type DeepValue<T, P extends readonly PropertyKey[]> = P extends []
-  ? T
-  : P extends [infer K, ...infer Rest]
+export type DeepValue<T, P extends readonly PropertyKey[]> =
+  P extends [] ? T :
+  P extends readonly [infer K, ...infer Rest]
     ? K extends keyof T
-      ? DeepValue<T[K], Rest as readonly PropertyKey[]>
+      ? DeepValue<T[K], Rest>
       : unknown
     : unknown;
 
