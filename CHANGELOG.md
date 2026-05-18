@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - `peek(signalRef)` — read a signal's current value without creating a reactive dependency. Useful for logging, conditional reads inside `computed`/`effect`, and one-off snapshots.
 - `updateAtPath(target, path, updater)` — mutate a deep signal at an arbitrary path using an updater function. Works on leaf paths, branch paths, and root (empty path).
 - `toReadonlyDeepSignal(target)` — converts a writable `WritableDeepSignal<T>` to a fully read-only `ReadonlyDeepSignal<T>`. All `set`/`update` operations are removed from the type.
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CONTRIBUTING.md` — contribution guidelines.
 
 ### Changed
+
 - Internal refactoring of `deep-signal.ts` — grouped code into logical sections with clear comments (public types, runtime type guards, path utilities, linked writable leaf, deep proxy factory, batching, public API).
 - `batch()` function added — coalesces multiple leaf writes into a single root update to avoid redundant re-computations. Supports nested batching and error-safe rollback.
 - `scheduleBatchedRootUpdate()` internal helper — routes leaf writes through the batch scheduler.
@@ -37,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `JsonPipe` import from demo app (unused).
 
 ### Fixed
+
 - Stale computed entries are now cleaned up when the root signal's shape changes (via `set()`), preventing memory leaks and stale dependencies.
 - Proxy `get` handler now properly passes through Angular-internal symbols and non-string/symbol properties.
 - `Object.defineProperty` on proxy target now uses `configurable: true` to allow subsequent cleanup via `delete`.
@@ -44,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.3] — 2025-05-18
 
 ### Added
+
 - Initial release: `deepSignal` and `WritableDeepSignal` for Angular.
 - Granular reactive subscriptions per deep path.
 - Writable leaf signals with `set` / `update`.

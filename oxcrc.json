@@ -6,10 +6,5 @@
     "pedantic": true,
     "style": true
   },
-  "ignore": [
-    "dist/",
-    "node_modules/",
-    "coverage/",
-    "CHANGELOG.md"
-  ]
+  "ignore": ["dist/", "node_modules/", "coverage/", "CHANGELOG.md"]
 }

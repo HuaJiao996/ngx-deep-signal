@@ -1,6 +1,7 @@
 {
   "name": "ngx-deep-signal",
   "version": "0.0.3",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "prestart": "ng build ngx-deep-signal",
@@ -20,8 +21,6 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix"
   },
-  "license": "MIT",
-  "packageManager": "npm@11.12.1",
   "dependencies": {
     "@angular/common": "^21.0.0",
     "@angular/compiler": "^21.0.0",
@@ -46,5 +45,6 @@
     "playwright-ng-schematics": "^21.0.10",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
-  }
+  },
+  "packageManager": "npm@11.12.1"
 }

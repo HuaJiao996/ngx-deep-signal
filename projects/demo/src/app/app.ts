@@ -136,7 +136,9 @@ export class App {
   }
 
   bumpJoinedYear(): void {
-    this.state.joined.update((d) => new Date(Date.UTC(d.getUTCFullYear() + 1, d.getUTCMonth(), d.getUTCDate())));
+    this.state.joined.update(
+      (d) => new Date(Date.UTC(d.getUTCFullYear() + 1, d.getUTCMonth(), d.getUTCDate())),
+    );
   }
 
   incTick(): void {

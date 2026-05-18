@@ -8,9 +8,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "paths": {
-      "ngx-deep-signal": [
-        "./dist/ngx-deep-signal"
-      ]
+      "ngx-deep-signal": ["./dist/ngx-deep-signal"]
     },
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,

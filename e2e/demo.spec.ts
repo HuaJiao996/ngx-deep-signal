@@ -286,7 +286,7 @@ test.describe('peek and updateAtPath', () => {
     const name = page.getByTestId('name');
     const age = page.getByTestId('age');
 
-    const initialName = await name.textContent();
+    const _unused = await name.textContent();
     const initialAge = await age.textContent();
 
     await page.getByTestId('btn-batch').click();

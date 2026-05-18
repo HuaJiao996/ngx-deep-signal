@@ -27,14 +27,7 @@
  * ```
  */
 
-import {
-  computed,
-  isSignal,
-  signal,
-  Signal,
-  untracked,
-  WritableSignal,
-} from '@angular/core';
+import { computed, isSignal, signal, Signal, untracked, WritableSignal } from '@angular/core';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public types
@@ -44,17 +37,15 @@ import {
  * Marker symbol attached to lazily-created computed signals so that stale computed
  * entries on a proxy can be cleaned up when the root signal's shape changes.
  */
-const DEEP_SIGNAL_MARKER = Symbol(typeof ngDevMode !== 'undefined' && ngDevMode ? 'NGX_DEEP_SIGNAL' : '');
+const DEEP_SIGNAL_MARKER = Symbol(
+  typeof ngDevMode !== 'undefined' && ngDevMode ? 'NGX_DEEP_SIGNAL' : '',
+);
 
 /**
  * Narrowing helper — true when `value` has the DEEP_SIGNAL_MARKER attached.
  */
 function hasMarker(value: unknown): value is { [DEEP_SIGNAL_MARKER]?: boolean } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    DEEP_SIGNAL_MARKER in (value as object)
-  );
+  return typeof value === 'object' && value !== null && DEEP_SIGNAL_MARKER in (value as object);
 }
 
 /**
@@ -81,19 +72,19 @@ type IsRecord<T> = T extends object ? (T extends NonRecord ? false : true) : fal
  * from models with known keys. Wide objects are treated as leaf — we don't
  * recursively expose their dynamic keys as sub-signals.
  */
-type IsUnknownRecord<T> =
-  keyof T extends never
+type IsUnknownRecord<T> = keyof T extends never
+  ? true
+  : string extends keyof T
     ? true
-    : string extends keyof T
+    : symbol extends keyof T
       ? true
-      : symbol extends keyof T
+      : number extends keyof T
         ? true
-        : number extends keyof T
-          ? true
-          : false;
+        : false;
 
 /** True when `T` is a plain object with known keys that should be deep-split. */
-type IsKnownRecord<T> = IsRecord<T> extends true ? (IsUnknownRecord<T> extends true ? false : true) : false;
+type IsKnownRecord<T> =
+  IsRecord<T> extends true ? (IsUnknownRecord<T> extends true ? false : true) : false;
 
 /**
  * ReadonlyDeepSignal mirrors WritableDeepSignal but all leaves are read-only signals.
@@ -354,9 +345,11 @@ function toDeepSignal<T>(
 
       // Non-record leaf → wrap as a linked writable signal
       if (!isRecord(childVal)) {
-        return createLinkedWritable(root, [...path, prop], childComputed as Signal<unknown>) as WritableSignal<
-          unknown
-        >;
+        return createLinkedWritable(
+          root,
+          [...path, prop],
+          childComputed as Signal<unknown>,
+        ) as WritableSignal<unknown>;
       }
 
       // Record branch → recurse
@@ -520,9 +513,9 @@ export function updateAtPath<T, P extends readonly PropertyKey[]>(
  * type Name = DeepValue<{ user: { name: string } }, ['user', 'name']>; // string
  * ```
  */
-export type DeepValue<T, P extends readonly PropertyKey[]> =
-  P extends [] ? T :
-  P extends readonly [infer K, ...infer Rest]
+export type DeepValue<T, P extends readonly PropertyKey[]> = P extends []
+  ? T
+  : P extends readonly [infer K, ...infer Rest]
     ? K extends keyof T
       ? DeepValue<T[K], Rest>
       : unknown

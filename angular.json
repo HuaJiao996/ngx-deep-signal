@@ -34,22 +34,12 @@
             "coverage": {
               "watch": false,
               "coverage": true,
-              "coverageReporters": [
-                "text",
-                "text-summary",
-                "lcov",
-                "html"
-              ],
-              "coverageInclude": [
-                "lib/**/*.ts"
-              ],
-              "coverageExclude": [
-                "**/*.spec.ts",
-                "lib/public-api.ts"
-              ]
+              "coverageReporters": ["text", "text-summary", "lcov", "html"],
+              "coverageInclude": ["lib/**/*.ts"],
+              "coverageExclude": ["**/*.spec.ts", "lib/public-api.ts"]
             }
           }
-        },
+        }
       }
     },
     "demo": {
@@ -95,9 +85,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": [
-              "projects/demo/src/styles.css"
-            ]
+            "styles": ["projects/demo/src/styles.css"]
           },
           "configurations": {
             "production": {

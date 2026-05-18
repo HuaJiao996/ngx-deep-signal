@@ -9,16 +9,16 @@ uses the root `set` / `update`.
 
 ## Public API
 
-| Export | Description |
-|--------|-------------|
-| `deepSignal(initialValue)` | Creates a deep writable signal tree |
-| `peek(signalRef)` | Reads without creating a reactive dependency |
-| `updateAtPath(ds, path, updater)` | Mutates a path via an updater function |
-| `toReadonlyDeepSignal(ds)` | Converts a writable deep signal to fully read-only |
-| `batch(fn)` | Batches multiple leaf writes into a single root update |
-| `WritableDeepSignal<T>` | Type for writable deep signal trees |
-| `ReadonlyDeepSignal<T>` | Type for read-only deep signal trees |
-| `DeepValue<T, P>` | Utility type: value at path `P` from type `T` |
+| Export                            | Description                                            |
+| --------------------------------- | ------------------------------------------------------ |
+| `deepSignal(initialValue)`        | Creates a deep writable signal tree                    |
+| `peek(signalRef)`                 | Reads without creating a reactive dependency           |
+| `updateAtPath(ds, path, updater)` | Mutates a path via an updater function                 |
+| `toReadonlyDeepSignal(ds)`        | Converts a writable deep signal to fully read-only     |
+| `batch(fn)`                       | Batches multiple leaf writes into a single root update |
+| `WritableDeepSignal<T>`           | Type for writable deep signal trees                    |
+| `ReadonlyDeepSignal<T>`           | Type for read-only deep signal trees                   |
+| `DeepValue<T, P>`                 | Utility type: value at path `P` from type `T`          |
 
 ## Requirements
 
@@ -41,40 +41,40 @@ npm install ngx-deep-signal
 ## Usage
 
 ```ts
-import { computed, effect, linkedSignal, untracked } from '@angular/core';
-import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from 'ngx-deep-signal';
+import { computed, effect, linkedSignal, untracked } from "@angular/core";
+import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from "ngx-deep-signal";
 
-const state = deepSignal({ user: { name: 'Ada', age: 36, tags: ['dev'] as string[] } });
+const state = deepSignal({ user: { name: "Ada", age: 36, tags: ["dev"] as string[] } });
 ```
 
 ### Writable leaf operations
 
 ```ts
-state.user.name.set('Bob');
-state.user.age.update(n => n + 1);
-state.user.tags.update(tags => [...tags, 'signal']);
+state.user.name.set("Bob");
+state.user.age.update((n) => n + 1);
+state.user.tags.update((tags) => [...tags, "signal"]);
 ```
 
 ### Whole-tree operations
 
 ```ts
-state.set({ user: { name: 'Ada', age: 36, tags: ['dev'] } });
-state.update(d => ({ user: { ...d.user, age: 18 } }));
+state.set({ user: { name: "Ada", age: 36, tags: ["dev"] } });
+state.update((d) => ({ user: { ...d.user, age: 18 } }));
 // In `update`, `d` is a plain snapshot of T, NOT a deep signal — use `d.user.name`, not `d.user.name()`.
 ```
 
 ### Snapshots at any level
 
 ```ts
-const root = state();            // { user: { name, age, tags } }
-const user = state.user();       // { name, age, tags }
-const name = state.user.name();  // string
+const root = state(); // { user: { name, age, tags } }
+const user = state.user(); // { name, age, tags }
+const name = state.user.name(); // string
 ```
 
 ### Non-reactive read with `peek`
 
 ```ts
-const name = peek(state.user.name);        // 'Ada' — no dependency tracked
+const name = peek(state.user.name); // 'Ada' — no dependency tracked
 const snapshot = peek(() => state.user()); // { name: 'Ada', ... } — also works with a getter
 ```
 
@@ -82,16 +82,16 @@ const snapshot = peek(() => state.user()); // { name: 'Ada', ... } — also work
 
 ```ts
 // Update a leaf at an arbitrary path
-updateAtPath(state, ['user', 'name'], n => n.toUpperCase()); // state.user.name() === 'ADA'
+updateAtPath(state, ["user", "name"], (n) => n.toUpperCase()); // state.user.name() === 'ADA'
 
 // Update a branch at an intermediate path
-updateAtPath(state, ['user'], u => ({ ...u, age: 40 }));
+updateAtPath(state, ["user"], (u) => ({ ...u, age: 40 }));
 
 // Full root update with empty path
-updateAtPath(state, [], () => ({ user: { name: 'Lin', age: 18 } }));
+updateAtPath(state, [], () => ({ user: { name: "Lin", age: 18 } }));
 
 // Update array items by index
-updateAtPath(state, ['items', '0', 'label'], l => l.toUpperCase());
+updateAtPath(state, ["items", "0", "label"], (l) => l.toUpperCase());
 ```
 
 ### Readonly conversion
@@ -107,9 +107,9 @@ const rootReadonly = state.asReadonly();
 
 // batch: coalesce multiple leaf writes into a single root update
 batch(() => {
-  state.user.name.set('Bob');
+  state.user.name.set("Bob");
   state.user.age.set(40);
-  state.user.name.set('Lin'); // last write wins
+  state.user.name.set("Lin"); // last write wins
 });
 // Only one root update fires — computed/effect sees final snapshot
 ```
@@ -118,12 +118,10 @@ batch(() => {
 
 ```ts
 const nameView = computed(() => state.user.name());
-const ageUntracked = computed(() =>
-  `${state.user.name()}-${untracked(() => state.user.age())}`,
-);
+const ageUntracked = computed(() => `${state.user.name()}-${untracked(() => state.user.age())}`);
 
 effect(() => {
-  console.log('Name changed:', state.user.name());
+  console.log("Name changed:", state.user.name());
 });
 
 // linkedSignal inside injection context
@@ -136,9 +134,9 @@ const alias = linkedSignal({
 ### RxJS interop and `resource` (experimental)
 
 ```ts
-import { Injector, computed, inject, resource } from '@angular/core';
-import { rxResource, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, of } from 'rxjs';
+import { Injector, computed, inject, resource } from "@angular/core";
+import { rxResource, toObservable, toSignal } from "@angular/core/rxjs-interop";
+import { BehaviorSubject, of } from "rxjs";
 
 const injector = inject(Injector);
 const n$ = new BehaviorSubject(1);
@@ -147,15 +145,18 @@ const n = toSignal(n$, { initialValue: 0, injector });
 const res = resource({
   params: () => state.user.name(),
   loader: ({ params }) => Promise.resolve(`hi:${params}`),
-  defaultValue: 'hi:',
+  defaultValue: "hi:",
   injector,
 });
 
-const name$ = toObservable(computed(() => state.user.name()), { injector });
+const name$ = toObservable(
+  computed(() => state.user.name()),
+  { injector },
+);
 const rxRes = rxResource({
   params: () => state.user.name(),
   stream: ({ params }) => of(`rx:${params}`),
-  defaultValue: 'rx:',
+  defaultValue: "rx:",
   injector,
 });
 ```
@@ -172,7 +173,7 @@ WritableSignal<{
     name: WritableSignal<string>;
     age: WritableSignal<number>;
   }>;
-}>
+}>;
 ```
 
 `toReadonlyDeepSignal(state)` returns:
@@ -180,10 +181,10 @@ WritableSignal<{
 ```ts
 ReadonlyDeepSignal<{
   user: ReadonlyDeepSignal<{
-    name: Signal<string>;     // no set/update
-    age: Signal<number>;      // no set/update
+    name: Signal<string>; // no set/update
+    age: Signal<number>; // no set/update
   }>;
-}>
+}>;
 ```
 
 ## Type system: what gets deep-split?
@@ -284,11 +285,11 @@ Adjust `version` in `lib/package.json` before building if needed.
 
 ## Repository layout
 
-| Path | Role |
-|------|------|
-| `lib/` | Library source, unit tests, ng-packagr / tsconfig configs |
-| `projects/demo/` | Demo Angular app (`ng serve demo`) |
-| `e2e/` | Playwright end-to-end specs |
-| `playwright.config.ts` | Playwright configuration |
-| `dist/ngx-deep-signal/` | Packaged library after `ng build` / `npm run build` |
-| `dist/demo/` | Demo app production build after `ng build demo` |
+| Path                    | Role                                                      |
+| ----------------------- | --------------------------------------------------------- |
+| `lib/`                  | Library source, unit tests, ng-packagr / tsconfig configs |
+| `projects/demo/`        | Demo Angular app (`ng serve demo`)                        |
+| `e2e/`                  | Playwright end-to-end specs                               |
+| `playwright.config.ts`  | Playwright configuration                                  |
+| `dist/ngx-deep-signal/` | Packaged library after `ng build` / `npm run build`       |
+| `dist/demo/`            | Demo app production build after `ng build demo`           |

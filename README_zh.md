@@ -6,16 +6,16 @@
 
 ## 导出总览
 
-| 导出 | 说明 |
-|------|------|
-| `deepSignal(initialValue)` | 创建深层可写 Signal 树 |
-| `peek(signalRef)` | 无依赖追踪的读取 |
-| `updateAtPath(ds, path, updater)` | 按路径批量更新 |
-| `toReadonlyDeepSignal(ds)` | 将可写深层 Signal 转为只读 |
-| `batch(fn)` | 将多次叶子写入合并为单次根更新 |
-| `WritableDeepSignal<T>` | 可写深层 Signal 类型 |
-| `ReadonlyDeepSignal<T>` | 只读深层 Signal 类型 |
-| `DeepValue<T, P>` | 取类型 `T` 在路径 `P` 上的值类型 |
+| 导出                              | 说明                             |
+| --------------------------------- | -------------------------------- |
+| `deepSignal(initialValue)`        | 创建深层可写 Signal 树           |
+| `peek(signalRef)`                 | 无依赖追踪的读取                 |
+| `updateAtPath(ds, path, updater)` | 按路径批量更新                   |
+| `toReadonlyDeepSignal(ds)`        | 将可写深层 Signal 转为只读       |
+| `batch(fn)`                       | 将多次叶子写入合并为单次根更新   |
+| `WritableDeepSignal<T>`           | 可写深层 Signal 类型             |
+| `ReadonlyDeepSignal<T>`           | 只读深层 Signal 类型             |
+| `DeepValue<T, P>`                 | 取类型 `T` 在路径 `P` 上的值类型 |
 
 ## 环境
 
@@ -38,40 +38,40 @@ npm install ngx-deep-signal
 ## 用法
 
 ```ts
-import { computed, effect, linkedSignal, untracked } from '@angular/core';
-import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from 'ngx-deep-signal';
+import { computed, effect, linkedSignal, untracked } from "@angular/core";
+import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from "ngx-deep-signal";
 
-const state = deepSignal({ user: { name: 'Ada', age: 36, tags: ['dev'] as string[] } });
+const state = deepSignal({ user: { name: "Ada", age: 36, tags: ["dev"] as string[] } });
 ```
 
 ### 叶子可写操作
 
 ```ts
-state.user.name.set('Bob');
-state.user.age.update(n => n + 1);
-state.user.tags.update(tags => [...tags, 'signal']);
+state.user.name.set("Bob");
+state.user.age.update((n) => n + 1);
+state.user.tags.update((tags) => [...tags, "signal"]);
 ```
 
 ### 整棵树操作
 
 ```ts
-state.set({ user: { name: 'Ada', age: 36, tags: ['dev'] } });
-state.update(d => ({ user: { ...d.user, age: 18 } }));
+state.set({ user: { name: "Ada", age: 36, tags: ["dev"] } });
+state.update((d) => ({ user: { ...d.user, age: 18 } }));
 // `update` 回调里的 `d` 是当前值的普通快照（类型 `T`），不是深层 signal，因此写 `d.user.name`，不要写 `d.user.name()`。
 ```
 
 ### 任意层级用 `()` 取快照
 
 ```ts
-const root = state();            // { user: { name, age, tags } }
-const user = state.user();       // { name, age, tags }
-const name = state.user.name();  // string
+const root = state(); // { user: { name, age, tags } }
+const user = state.user(); // { name, age, tags }
+const name = state.user.name(); // string
 ```
 
 ### 无依赖读取 `peek`
 
 ```ts
-const name = peek(state.user.name);        // 'Ada' — 不创建依赖
+const name = peek(state.user.name); // 'Ada' — 不创建依赖
 const snapshot = peek(() => state.user()); // { name: 'Ada', ... } — 也支持 getter
 ```
 
@@ -79,16 +79,16 @@ const snapshot = peek(() => state.user()); // { name: 'Ada', ... } — 也支持
 
 ```ts
 // 更新叶子
-updateAtPath(state, ['user', 'name'], n => n.toUpperCase()); // 'ADA'
+updateAtPath(state, ["user", "name"], (n) => n.toUpperCase()); // 'ADA'
 
 // 更新分支
-updateAtPath(state, ['user'], u => ({ ...u, age: 40 }));
+updateAtPath(state, ["user"], (u) => ({ ...u, age: 40 }));
 
 // 根级全量更新（空路径）
-updateAtPath(state, [], () => ({ user: { name: 'Lin', age: 18 } }));
+updateAtPath(state, [], () => ({ user: { name: "Lin", age: 18 } }));
 
 // 按索引更新数组项
-updateAtPath(state, ['items', '0', 'label'], l => l.toUpperCase());
+updateAtPath(state, ["items", "0", "label"], (l) => l.toUpperCase());
 ```
 
 ### 只读转换
@@ -104,9 +104,9 @@ const rootReadonly = state.asReadonly();
 
 // batch：将多次叶子写入合并为单次根更新
 batch(() => {
-  state.user.name.set('Bob');
+  state.user.name.set("Bob");
   state.user.age.set(40);
-  state.user.name.set('Lin'); // 同一路径的最后写入生效
+  state.user.name.set("Lin"); // 同一路径的最后写入生效
 });
 // 只触发一次根更新 — computed/effect 看到最终快照
 ```
@@ -115,12 +115,10 @@ batch(() => {
 
 ```ts
 const nameView = computed(() => state.user.name());
-const ageUntracked = computed(() =>
-  `${state.user.name()}-${untracked(() => state.user.age())}`,
-);
+const ageUntracked = computed(() => `${state.user.name()}-${untracked(() => state.user.age())}`);
 
 effect(() => {
-  console.log('name changed:', state.user.name());
+  console.log("name changed:", state.user.name());
 });
 
 // 在注入上下文中创建 linkedSignal
@@ -133,9 +131,9 @@ const alias = linkedSignal({
 ### RxJS 互操作与 `resource`（实验性）
 
 ```ts
-import { Injector, computed, inject, resource } from '@angular/core';
-import { rxResource, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, of } from 'rxjs';
+import { Injector, computed, inject, resource } from "@angular/core";
+import { rxResource, toObservable, toSignal } from "@angular/core/rxjs-interop";
+import { BehaviorSubject, of } from "rxjs";
 
 const injector = inject(Injector);
 const n$ = new BehaviorSubject(1);
@@ -144,15 +142,18 @@ const n = toSignal(n$, { initialValue: 0, injector });
 const res = resource({
   params: () => state.user.name(),
   loader: ({ params }) => Promise.resolve(`hi:${params}`),
-  defaultValue: 'hi:',
+  defaultValue: "hi:",
   injector,
 });
 
-const name$ = toObservable(computed(() => state.user.name()), { injector });
+const name$ = toObservable(
+  computed(() => state.user.name()),
+  { injector },
+);
 const rxRes = rxResource({
   params: () => state.user.name(),
   stream: ({ params }) => of(`rx:${params}`),
-  defaultValue: 'rx:',
+  defaultValue: "rx:",
   injector,
 });
 ```
@@ -169,7 +170,7 @@ WritableSignal<{
     name: WritableSignal<string>;
     age: WritableSignal<number>;
   }>;
-}>
+}>;
 ```
 
 `toReadonlyDeepSignal(state)` 返回：
@@ -177,10 +178,10 @@ WritableSignal<{
 ```ts
 ReadonlyDeepSignal<{
   user: ReadonlyDeepSignal<{
-    name: Signal<string>;     // 无 set/update
-    age: Signal<number>;     // 无 set/update
+    name: Signal<string>; // 无 set/update
+    age: Signal<number>; // 无 set/update
   }>;
-}>
+}>;
 ```
 
 ## 类型系统：哪些会深度拆分？
@@ -281,11 +282,11 @@ npm publish
 
 ## 目录结构
 
-| 路径 | 说明 |
-|------|------|
-| `lib/` | 库源码、单元测试与 ng-packagr / tsconfig 配置 |
-| `projects/demo/` | 演示用 Angular 应用（`ng serve demo`） |
-| `e2e/` | Playwright 端到端用例 |
-| `playwright.config.ts` | Playwright 配置 |
+| 路径                    | 说明                                                    |
+| ----------------------- | ------------------------------------------------------- |
+| `lib/`                  | 库源码、单元测试与 ng-packagr / tsconfig 配置           |
+| `projects/demo/`        | 演示用 Angular 应用（`ng serve demo`）                  |
+| `e2e/`                  | Playwright 端到端用例                                   |
+| `playwright.config.ts`  | Playwright 配置                                         |
 | `dist/ngx-deep-signal/` | `npm run build` / `ng build ngx-deep-signal` 后的库产物 |
-| `dist/demo/` | `ng build demo` 后的演示应用产物 |
+| `dist/demo/`            | `ng build demo` 后的演示应用产物                        |

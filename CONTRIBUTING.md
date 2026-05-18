@@ -78,13 +78,13 @@ Use Vitest + Angular's `TestBed`. Every public API function needs a test
 covering the happy path and at least one edge case.
 
 ```ts
-describe('myNewFunction', () => {
-  it('behaves correctly in the normal case', () => {
-    const state = deepSignal({ user: { name: 'Ada', age: 36 } });
+describe("myNewFunction", () => {
+  it("behaves correctly in the normal case", () => {
+    const state = deepSignal({ user: { name: "Ada", age: 36 } });
     // assert...
   });
 
-  it('handles edge case X', () => {
+  it("handles edge case X", () => {
     // ...
   });
 });
@@ -93,6 +93,7 @@ describe('myNewFunction', () => {
 ### E2E tests (`e2e/demo.spec.ts`)
 
 Use Playwright. Each test should:
+
 1. Navigate to `/`
 2. Assert initial state
 3. Trigger an action
@@ -124,6 +125,7 @@ When you access a property:
    `root.update()` with an immutable `setAtPath` call.
 
 This means:
+
 - Reading `state.user.name()` subscribes only to the `name` computed → granular reactivity.
 - Writing `state.user.name.set('Bob')` calls `root.update(s => setAtPath(s, ['user', 'name'], 'Bob'))`
   → immutable, efficient.
@@ -131,6 +133,7 @@ This means:
 ### Type system
 
 `IsKnownRecord<T>` determines whether `T` should be deep-split:
+
 - `IsRecord<T>` — `T extends object` but not in the `NonRecord` list.
 - `IsUnknownRecord<T>` — `T` has an index signature (`string extends keyof T`) or
   `keyof T extends never`. These are treated as opaque leaves.
@@ -141,6 +144,7 @@ nested property access to `Signal<T>` / `WritableSignal<T>`.
 ## Filing issues
 
 Please include:
+
 - Angular version
 - ngx-deep-signal version
 - A minimal reproduction (StackBlitz or repo snippet)

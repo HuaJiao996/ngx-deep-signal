@@ -3,9 +3,11 @@
   <p class="lead">
     单页覆盖：<code>deepSignal</code> 深层路径、叶子 <code>set</code>/<code>update</code>、根
     <code>set</code>/<code>update</code>、数组/<code>Date</code> 叶子、<code>computed</code> /
-    <code>untracked</code>、<code>asReadonly</code>、<code>linkedSignal</code>、<code>effect</code>、
+    <code>untracked</code
+    >、<code>asReadonly</code>、<code>linkedSignal</code>、<code>effect</code>、
     <code>isSignal</code>、<code>resource</code> / <code>rxResource</code>、<code>toSignal</code>、
-    <code>input</code> / <code>output</code> / <code>model</code>、<code>peek</code>、<code>updateAtPath</code>。
+    <code>input</code> / <code>output</code> /
+    <code>model</code>、<code>peek</code>、<code>updateAtPath</code>。
   </p>
 
   <!-- ── New: peek + updateAtPath demo ─────────────────────────────────── -->
@@ -14,15 +16,21 @@
     <p class="hint">
       <code>peek</code> 读取值而不创建依赖；<code>updateAtPath</code> 按路径批量更新。
     </p>
-    <p>
-      peek 调用计数：<strong data-testid="peek-count">{{ peekReadCount() }}</strong>
-    </p>
+    <p>peek 调用计数：<strong data-testid="peek-count">{{ peekReadCount() }}</strong></p>
     <div class="actions">
       <button type="button" data-testid="btn-peek" (click)="demonstratePeek()">peek(name)</button>
-      <button type="button" data-testid="btn-update-path" (click)="updateViaPath()">updateAtPath(name→大写)</button>
-      <button type="button" data-testid="btn-update-branch" (click)="updateBranchViaPath()">updateAtPath(user分支)</button>
-      <button type="button" data-testid="btn-update-array" (click)="updateArrayViaPath()">updateAtPath(tags[0]</button>
-      <button type="button" data-testid="btn-peek-reset" (click)="resetPeekCounter()">重置计数</button>
+      <button type="button" data-testid="btn-update-path" (click)="updateViaPath()">
+        updateAtPath(name→大写)
+      </button>
+      <button type="button" data-testid="btn-update-branch" (click)="updateBranchViaPath()">
+        updateAtPath(user分支)
+      </button>
+      <button type="button" data-testid="btn-update-array" (click)="updateArrayViaPath()">
+        updateAtPath(tags[0]
+      </button>
+      <button type="button" data-testid="btn-peek-reset" (click)="resetPeekCounter()">
+        重置计数
+      </button>
       <button type="button" data-testid="btn-batch" (click)="batchUpdate()">batch(2次写入)</button>
     </div>
   </section>
@@ -34,7 +42,9 @@
       (rename)="state.user.name.set($event)"
       [(guest)]="guestDraft"
     />
-    <p class="hint">父级 <code>guestDraft</code>：<span data-testid="parent-guest-draft">{{ guestDraft() }}</span></p>
+    <p class="hint">
+      父级 <code>guestDraft</code>：<span data-testid="parent-guest-draft">{{ guestDraft() }}</span>
+    </p>
   </section>
 
   <section class="panel" data-testid="section-basic" aria-label="basic user">
@@ -73,14 +83,18 @@
     <p data-testid="tags">{{ state.tags().join(',') }}</p>
     <button type="button" data-testid="btn-tag" (click)="appendTag()">Append tag</button>
     <p data-testid="joined">{{ state.joined().toISOString() }}</p>
-    <button type="button" data-testid="btn-joined" (click)="bumpJoinedYear()">Joined +1 year</button>
+    <button type="button" data-testid="btn-joined" (click)="bumpJoinedYear()">
+      Joined +1 year
+    </button>
   </section>
 
   <section class="panel" data-testid="section-computed" aria-label="computed and untracked">
     <h2><code>computed</code> 粒度与 <code>untracked</code></h2>
     <p data-testid="name-only">{{ nameOnly() }}</p>
     <p data-testid="untracked-line">{{ untrackedLine() }}</p>
-    <p class="hint">改 age 后：<code>name-only</code> 不变；<code>untracked-line</code> 在改 name 前仍显示旧 age。</p>
+    <p class="hint">
+      改 age 后：<code>name-only</code> 不变；<code>untracked-line</code> 在改 name 前仍显示旧 age。
+    </p>
   </section>
 
   <section class="panel" data-testid="section-tosignal" aria-label="toSignal">

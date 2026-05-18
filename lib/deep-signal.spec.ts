@@ -13,13 +13,7 @@ import { rxResource, takeUntilDestroyed, toObservable, toSignal } from '@angular
 import { TestBed } from '@angular/core/testing';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import {
-  deepSignal,
-  peek,
-  updateAtPath,
-  toReadonlyDeepSignal,
-  batch,
-} from './deep-signal';
+import { deepSignal, peek, updateAtPath, toReadonlyDeepSignal, batch } from './deep-signal';
 
 describe('deepSignal', () => {
   beforeEach(() => {
@@ -354,7 +348,10 @@ describe('deepSignal', () => {
     const state = deepSignal({ user: { name: 'Ada', age: 36 } });
     const injector = TestBed.inject(Injector);
     const name$ = TestBed.runInInjectionContext(() =>
-      toObservable(computed(() => state.user.name()), { injector }),
+      toObservable(
+        computed(() => state.user.name()),
+        { injector },
+      ),
     );
 
     let completed = false;
@@ -374,7 +371,10 @@ describe('deepSignal', () => {
     const state = deepSignal({ user: { name: 'Ada', age: 36 } });
     const injector = TestBed.inject(Injector);
     const name$ = TestBed.runInInjectionContext(() =>
-      toObservable(computed(() => state.user.name()), { injector }),
+      toObservable(
+        computed(() => state.user.name()),
+        { injector },
+      ),
     );
 
     const v = await firstValueFrom(name$);
@@ -639,7 +639,7 @@ describe('deepSignal', () => {
       expect(c()).toBe('Ada');
       expect(runs).toBe(1);
 
-      updateAtPath(state, ['user', 'name'], (n) => 'Bob');
+      updateAtPath(state, ['user', 'name'], () => 'Bob');
 
       expect(c()).toBe('Bob');
       expect(runs).toBe(2);
@@ -735,14 +735,28 @@ describe('deepSignal', () => {
     });
 
     it('handles deeply nested arrays', () => {
-      const state = deepSignal({ matrix: [[1, 2], [3, 4]] as number[][] });
+      const state = deepSignal({
+        matrix: [
+          [1, 2],
+          [3, 4],
+        ] as number[][],
+      });
 
       // matrix is treated as a leaf (array is NonRecord)
-      state.matrix.set([[5, 6], [7, 8]]);
-      expect(state.matrix()).toEqual([[5, 6], [7, 8]]);
+      state.matrix.set([
+        [5, 6],
+        [7, 8],
+      ]);
+      expect(state.matrix()).toEqual([
+        [5, 6],
+        [7, 8],
+      ]);
 
       state.matrix.update((m) => m.map((row) => row.map((v) => v * 2)));
-      expect(state.matrix()).toEqual([[10, 12], [14, 16]]);
+      expect(state.matrix()).toEqual([
+        [10, 12],
+        [14, 16],
+      ]);
     });
 
     it('updates work after set() replaces the entire tree', () => {
