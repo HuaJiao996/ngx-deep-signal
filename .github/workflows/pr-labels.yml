@@ -1,8 +1,5 @@
 name: PR Requirements
 
-# This workflow enforces that PRs are ready for review
-# and sets up labels automatically
-
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -15,8 +12,8 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Label as pending review
-        uses: actions/labeler@v5
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          not-associated-label: 'status:pending'
+      - name: Add labels
+        run: |
+          echo "Review required: ${{ github.event.pull_request.title }}"
+          # Add 'status/pending-review' label via GitHub CLI or API
+          gh pr edit ${{ github.event.number }} --add-label "status:pending-review" 2>/dev/null || true

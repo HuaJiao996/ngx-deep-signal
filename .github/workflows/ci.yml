@@ -31,7 +31,7 @@ jobs:
         run: npx prettier --check .
 
       - name: Type check
-        run: npx ng build ngx-deep-signal --configuration development 2>&1 | head -50
+        run: npx ng build ngx-deep-signal --configuration development
 
   test:
     name: Unit Tests
