@@ -28,10 +28,10 @@ jobs:
         run: npm ci
 
       - name: Check formatting
-        run: npx oxfmt --check
+        run: npm run fmt:check
 
       - name: Lint
-        run: npx oxlint
+        run: npm run lint
 
       - name: Build (type check)
         run: npx ng build ngx-deep-signal --configuration development
