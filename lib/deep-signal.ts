@@ -493,7 +493,9 @@ export function updateAtPath<T, P extends readonly PropertyKey[]>(
 ): void {
   if (path.length === 0) {
     // Full replacement via root signal's update
-    (target as WritableSignal<T>).update(() => updater((target as WritableSignal<T>)() as DeepValue<T, P>) as T);
+    (target as WritableSignal<T>).update(
+      () => updater((target as WritableSignal<T>)() as DeepValue<T, P>) as T,
+    );
     return;
   }
   (target as WritableSignal<unknown>).update((root) => {
