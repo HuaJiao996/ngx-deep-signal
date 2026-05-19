@@ -1,4 +1,5 @@
 import {
+  Component,
   computed,
   DestroyRef,
   effect,
@@ -7,7 +8,10 @@ import {
   isSignal,
   linkedSignal,
   resource,
+  signal,
+  Signal,
   untracked,
+  WritableSignal,
 } from '@angular/core';
 import { rxResource, takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { TestBed } from '@angular/core/testing';
@@ -704,7 +708,8 @@ describe('deepSignal', () => {
     it('asReadonly on the readonly returns itself', () => {
       const writable = deepSignal({ user: { name: 'Ada', age: 36 } });
       const readonly = toReadonlyDeepSignal(writable);
-      const r2 = readonly.user.name.asReadonly();
+      // asReadonly is defined on Signal, returns the signal itself when already readonly
+      const r2 = (readonly.user.name as unknown as { asReadonly: () => Signal<string> }).asReadonly();
       expect(r2()).toBe('Ada');
     });
   });
@@ -720,9 +725,13 @@ describe('deepSignal', () => {
       });
 
       expect(state.meta()).toBeInstanceOf(Map);
-      state.meta.set('key', 2);
+      const updatedMap = new Map(state.meta());
+      updatedMap.set('key', 2);
+      state.meta.set(updatedMap);
       expect(state.meta().get('key')).toBe(2);
-      state.meta.set('extra', 3);
+      const addedMap = new Map(state.meta());
+      addedMap.set('extra', 3);
+      state.meta.set(addedMap);
       expect(state.meta().get('extra')).toBe(3);
     });
 
@@ -730,7 +739,9 @@ describe('deepSignal', () => {
       const state = deepSignal({ tags: new Set(['a', 'b']) });
 
       expect(state.tags()).toBeInstanceOf(Set);
-      state.tags.add('c');
+      const added = new Set(state.tags());
+      added.add('c');
+      state.tags.set(added);
       expect(state.tags().has('c')).toBe(true);
     });
 
@@ -776,8 +787,8 @@ describe('deepSignal', () => {
       expect(state.a.x()).toBe(1);
       expect(state.b.y()).toBe(2);
 
-      // Remove the 'a' branch entirely
-      state.set({ b: { y: 20 } });
+      // Remove the 'a' branch entirely — intentionally test partial replacement
+      (state as WritableSignal<Record<string, unknown>>).set({ b: { y: 20 } });
 
       // Access 'a' again — old computed should be removed, fresh one created
       // The old computed for 'a' referenced a shape that no longer exists
