@@ -19,7 +19,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "prepare": "husky"
   },
   "dependencies": {
     "@angular/common": "^21.0.0",
@@ -40,6 +41,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "jsdom": "^28.0.0",
     "ng-packagr": "^21.2.0",
+    "husky": "^10.0.0",
     "oxfmt": "^0.50.0",
     "oxlint": "^1.65.0",
     "playwright-ng-schematics": "^21.0.10",
