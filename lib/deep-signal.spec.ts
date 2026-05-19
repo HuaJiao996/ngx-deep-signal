@@ -598,7 +598,7 @@ describe('deepSignal', () => {
     it('updates a leaf at a short path', () => {
       const state = deepSignal({ user: { name: 'Ada', age: 36 } });
 
-      updateAtPath(state, ['user', 'name'], (n) => n.toUpperCase());
+      updateAtPath(state, ['user', 'name'], (n: string) => n.toUpperCase());
 
       expect(state.user.name()).toBe('ADA');
       expect(state.user.age()).toBe(36);
@@ -607,7 +607,7 @@ describe('deepSignal', () => {
     it('updates a branch at an intermediate path', () => {
       const state = deepSignal({ user: { name: 'Ada', age: 36 } });
 
-      updateAtPath(state, ['user'], (u) => ({ ...u, age: 40 }));
+      updateAtPath(state, ['user'], (u: { name: string; age: number }) => ({ ...u, age: 40 }));
 
       expect(state.user.name()).toBe('Ada');
       expect(state.user.age()).toBe(40);
@@ -627,7 +627,7 @@ describe('deepSignal', () => {
         a: { b: { c: 1 } },
       });
 
-      updateAtPath(state, ['a', 'b', 'c'], (v) => v + 10);
+      updateAtPath(state, ['a', 'b', 'c'], (v: number) => v + 10);
 
       expect(state.a.b.c()).toBe(11);
     });
@@ -649,14 +649,14 @@ describe('deepSignal', () => {
       expect(runs).toBe(2);
 
       // Sibling path does not re-run
-      updateAtPath(state, ['user', 'age'], (a) => a + 1);
+      updateAtPath(state, ['user', 'age'], (a: number) => a + 1);
       expect(runs).toBe(2);
     });
 
     it('updates array items by index', () => {
       const state = deepSignal({ items: [{ label: 'a' }, { label: 'b' }] as { label: string }[] });
 
-      updateAtPath(state, ['items', '0', 'label'], (l) => l.toUpperCase());
+      updateAtPath(state, ['items', '0', 'label'], (l: string) => l.toUpperCase());
 
       expect(state.items()[0].label).toBe('A');
       expect(state.items()[1].label).toBe('b');
