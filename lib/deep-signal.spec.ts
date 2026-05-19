@@ -709,7 +709,9 @@ describe('deepSignal', () => {
       const writable = deepSignal({ user: { name: 'Ada', age: 36 } });
       const readonly = toReadonlyDeepSignal(writable);
       // asReadonly is defined on Signal, returns the signal itself when already readonly
-      const r2 = (readonly.user.name as unknown as { asReadonly: () => Signal<string> }).asReadonly();
+      const r2 = (
+        readonly.user.name as unknown as { asReadonly: () => Signal<string> }
+      ).asReadonly();
       expect(r2()).toBe('Ada');
     });
   });
