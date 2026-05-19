@@ -260,7 +260,7 @@ function createLinkedWritable<V>(
   w.asReadonly = () => readComputed;
 
   // Mark so `isSignal` may return true for linked leaves (Angular 19+)
-  (w as { [key: PropertyKey]: unknown })[Symbol.toStringTag] = 'Signal';
+  (w as unknown as { [key: PropertyKey]: unknown })[Symbol.toStringTag] = 'Signal';
 
   return w;
 }
@@ -519,7 +519,7 @@ export type DeepValue<T, P extends readonly PropertyKey[]> = P extends []
   ? T
   : P extends readonly [infer K, ...infer Rest]
     ? K extends keyof T
-      ? DeepValue<T[K], Rest>
+      ? DeepValue<T[K], Rest extends readonly PropertyKey[] ? Rest : never>
       : unknown
     : unknown;
 

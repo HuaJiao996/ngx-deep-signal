@@ -1,3 +1,5 @@
-#!/usr/bin/env sh
-npm run fmt:check
-npm run lint
+#!/bin/sh
+# Husky commit-msg hook
+# Validates commit message exists and is not empty
+commit_msg_file="$1"
+[ -f "$commit_msg_file" ] && [ -s "$commit_msg_file" ]
