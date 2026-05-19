@@ -135,7 +135,8 @@ export type WritableDeepSignal<T> = WritableSignal<T> &
 // Runtime type guards
 // ─────────────────────────────────────────────────────────────────────────────
 
-const nonRecordCtors: readonly Function[] = [
+// Use Set for O(1) lookups instead of O(n) array.includes()
+const nonRecordCtorSet: ReadonlySet<Function> = new Set([
   WeakSet,
   WeakMap,
   Promise,
@@ -145,27 +146,44 @@ const nonRecordCtors: readonly Function[] = [
   ArrayBuffer,
   DataView,
   Function,
-];
+]);
+
+// Cache for isRecord results — avoids repeated prototype chain walks
+const isRecordCache = new WeakMap<object, boolean>();
 
 /**
  * Returns `true` when `value` is a plain object (prototype chain ends at Object.prototype).
- * Arrays and built-in non-dictionary types (see `nonRecordCtors`) are treated as non-record.
+ * Arrays and built-in non-dictionary types (see `nonRecordCtorSet`) are treated as non-record.
+ * Results are cached in a WeakMap for repeated lookups of the same object.
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
   if (value === null || typeof value !== 'object' || isIterable(value)) {
     return false;
   }
+
+  // Check cache first
+  const cached = isRecordCache.get(value as object);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   let proto = Object.getPrototypeOf(value);
   if (proto === Object.prototype) {
+    isRecordCache.set(value as object, true);
     return true;
   }
+
   while (proto && proto !== Object.prototype) {
-    if (nonRecordCtors.includes(proto.constructor as Function)) {
+    if (nonRecordCtorSet.has(proto.constructor)) {
+      isRecordCache.set(value as object, false);
       return false;
     }
     proto = Object.getPrototypeOf(proto);
   }
-  return proto === Object.prototype;
+
+  const result = proto === Object.prototype;
+  isRecordCache.set(value as object, result);
+  return result;
 }
 
 function isIterable(value: unknown): value is Iterable<unknown> {
