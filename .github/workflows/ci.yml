@@ -56,7 +56,7 @@ jobs:
         run: npm run build
 
       - name: Run unit tests
-        run: npx ng test ngx-deep-signal --no-watch --browsers=ChromeHeadless --reporters=dot
+        run: npx ng test ngx-deep-signal --no-watch --reporters=dot
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
