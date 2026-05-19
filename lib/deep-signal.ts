@@ -260,7 +260,7 @@ function createLinkedWritable<V>(
   w.asReadonly = () => readComputed;
 
   // Mark so `isSignal` may return true for linked leaves (Angular 19+)
-  (w as { [key: symbol]: boolean })[Symbol.toStringTag] = 'Signal';
+  (w as { [key: PropertyKey]: unknown })[Symbol.toStringTag] = 'Signal';
 
   return w;
 }
@@ -311,7 +311,7 @@ function toDeepSignal<T>(
         prop === 'then' ||
         prop === DEEP_SIGNAL_MARKER ||
         // Let Angular get to the underlying signal methods
-        (typeof (target as unknown as { [k: string]: unknown })[prop] === 'function' &&
+        (typeof (target as unknown as Record<string | symbol, unknown>)[prop] === 'function' &&
           !Object.prototype.hasOwnProperty.call(target, prop))
       ) {
         return (target as Record<string | symbol, unknown>)[prop];
@@ -341,7 +341,7 @@ function toDeepSignal<T>(
         attachMarker(childComputed);
       }
 
-      const childVal = (snapshot as Record<string, unknown>)[prop];
+      const childVal = (snapshot as Record<string | symbol, unknown>)[prop];
 
       // Non-record leaf → wrap as a linked writable signal
       if (!isRecord(childVal)) {
@@ -493,7 +493,7 @@ export function updateAtPath<T, P extends readonly PropertyKey[]>(
 ): void {
   if (path.length === 0) {
     // Full replacement via root signal's update
-    (target as WritableSignal<T>).update(() => updater((target as WritableSignal<T>)()) as T);
+    (target as WritableSignal<T>).update(() => updater((target as WritableSignal<T>)() as DeepValue<T, P>) as T);
     return;
   }
   (target as WritableSignal<unknown>).update((root) => {
